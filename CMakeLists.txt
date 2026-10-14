@@ -4,5 +4,4 @@ project(marsRoverProjectAnishkaSinha)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(marsRoverProjectAnishkaSinha main.cpp
-        marsRover.cpp
-        marsRover.h)
+)
