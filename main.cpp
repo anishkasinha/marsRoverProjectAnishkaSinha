@@ -46,13 +46,13 @@ char translateDegreesToHeading(int direction) {
 
 
 //check that this works in main(). make a ptr
-char* splitString(string command) {
+static char* splitString(string command) {
     int stringSize = command.length();
-    char letters[stringSize + 1];
+    char letters[stringSize];
     for (int i = 0; i < stringSize; i++) {
-        letters[i] = command.at(i);
+        letters[i] = command[i];
     }
-    letters[stringSize + 1] = 'z';
+    letters[stringSize] = 0;
     return letters;
 }
 
@@ -106,10 +106,11 @@ void goOnAMission(int goalX, int goalY, string directions) {
     xCoord = 0;
     yCoord = 0;
     batteryLevel = 40;
-    while ((xCoord != goalX) && (yCoord != goalY) && (!quit) && (batteryLevel > 0)) {
-        char *commands = splitString(directions);
-        while (*commands != 'z') {
-            switch (*commands) {
+    char* ptr = splitString(directions);
+    while (((xCoord != goalX) || (yCoord != goalY)) && (!quit) && (batteryLevel > 0)) {
+        while (*ptr != 0) {
+            cout<<"in the inside loop"<<endl;
+            switch (*ptr) {
                 case 'F':
                     goForward();
                     cout<<"Command F successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
@@ -137,7 +138,7 @@ void goOnAMission(int goalX, int goalY, string directions) {
             if (batteryLevel == 0) {
                 break;
             }
-            *(commands+1);
+            *(ptr+1);
         }
     }
     heading = translateDegreesToHeading(headingDegrees);
@@ -145,6 +146,8 @@ void goOnAMission(int goalX, int goalY, string directions) {
 }
 
 int main() {
-    goOnAMission(1, 0, "F");
+    //goOnAMission(1, 5, "FRFFFFFF");
+    char test[5];
+    test = splitString("hello");
 }
 
