@@ -10,7 +10,7 @@ int batteryLevel;
 
 // housekeeping functions
 
-//add negative angle handling
+//add negative angle handling for later
 int translateHeadingToDegrees(char direction) {
     if (direction == 'E') {
         return 0;
@@ -48,10 +48,11 @@ char translateDegreesToHeading(int direction) {
 //check that this works in main(). make a ptr
 char* splitString(string command) {
     int stringSize = command.length();
-    char letters[stringSize];
+    char letters[stringSize + 1];
     for (int i = 0; i < stringSize; i++) {
         letters[i] = command.at(i);
     }
+    letters[stringSize + 1] = 'z';
     return letters;
 }
 
@@ -91,7 +92,7 @@ void scanArea() {
     batteryLevel -= 3;
 }
 
-void rechargebattery() {
+void rechargeBattery() {
     if (xCoord == 0 && yCoord == 0) {
         batteryLevel = 40;
     }else {
@@ -102,10 +103,48 @@ void rechargebattery() {
 void goOnAMission(int goalX, int goalY, string directions) {
     bool quit = false;
     headingDegrees = 0;
+    xCoord = 0;
+    yCoord = 0;
+    batteryLevel = 40;
     while ((xCoord != goalX) && (yCoord != goalY) && (!quit) && (batteryLevel > 0)) {
         char *commands = splitString(directions);
+        while (*commands != 'z') {
+            switch (*commands) {
+                case 'F':
+                    goForward();
+                    cout<<"Command F successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
+                    break;
+                case 'L':
+                    rotateLeft();
+                    cout<<"Command L successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
+                    break;
+                case 'R':
+                    rotateRight();
+                    cout<<"Command R successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
+                    break;
+                case 'S':
+                    scanArea();
+                    cout<<"Command S successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
+                    break;
+                case 'C':
+                    rechargeBattery();
+                    cout<<"Command C successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<".";
+                    break;
+                default:
+                    cout<<"Invalid input"<<endl;
+                    break;
+            }
+            if (batteryLevel == 0) {
+                break;
+            }
+            *(commands+1);
+        }
     }
-
+    heading = translateDegreesToHeading(headingDegrees);
+    cout<<"mission complete. rover is at: ("<<xCoord<<","<<yCoord<<"), and battery is at "<<batteryLevel<<". heading: "<<heading<<".";
 }
-int main() {}
+
+int main() {
+    goOnAMission(1, 0, "F");
+}
 
