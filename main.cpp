@@ -1,13 +1,14 @@
 #include <iostream>
 //#include <string>
 using namespace std;
-
+int successes;
 int xCoord;
 int yCoord;
 char heading;
 int headingDegrees;
 int batteryLevel;
 bool good;
+bool goalReached;
 // housekeeping functions
 
 //add negative angle handling for later
@@ -20,6 +21,8 @@ int translateHeadingToDegrees(char direction) {
         return 180;
     }else if (direction == 'S') {
         return 270;
+    }else {
+        return -1;
     }
 }
 
@@ -57,11 +60,42 @@ static char* splitString(string command) {
 }
 
 */
+
+//🤮
 void testCondition(char command) {
-    int projectedXCoord1 = xCoord++;
-    int projectedXCoord2 = xCoord--;
-    int projectedYCoord1 = yCoord++;
-    int projectedYCoord2 = yCoord--;
+    int projectedXCoord1 = xCoord + 1;
+    int projectedXCoord2 = xCoord - 1;
+    int projectedYCoord1 = yCoord + 1;
+    int projectedYCoord2 = yCoord - 1;
+
+    if ((command == 'F' && batteryLevel < 2) ||
+        ((command == 'L' || command == 'R') && batteryLevel < 1) ||
+        (command == 'S' && batteryLevel < 3)) {
+        cout<<"Command "<<command<<" rejected: insufficient battery"<<endl;
+        good = false;
+        }else if (command == 'F' &&
+            ((headingDegrees == 0 && projectedXCoord1 > 9) ||
+             (headingDegrees == 90 && projectedYCoord1 > 9))) {
+            cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
+            good = false;
+             }else if (command == 'F' &&
+                 ((headingDegrees == 180 && projectedXCoord2 < 0) ||
+                  (headingDegrees == 270 && projectedYCoord2 < 0))) {
+                 cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
+                 good = false;
+                  }else if (command == 'C' && (xCoord != 0 || yCoord != 0)) {
+                      cout<<"Command C rejected: not at charger"<<endl;
+                      good = false;
+                  }else{
+                      good = true;
+                  }
+}
+/*
+void testCondition(char command) {
+    int projectedXCoord1 = xCoord + 1;
+    int projectedXCoord2 = xCoord - 1;
+    int projectedYCoord1 = yCoord + 1;
+    int projectedYCoord2 = yCoord - 1;
     if (batteryLevel < 0) {
         cout<<"Command "<<command<<" rejected: insufficient battery"<<endl;
         good = false;
@@ -75,9 +109,9 @@ void testCondition(char command) {
         good = true;
     }
 }
-
+*/
 void printSuccess(char c){
-    cout<<"Command "<<c<<" successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<translateDegreesToHeading(headingDegrees)<<"."<<endl;
+    cout<<"Command "<<c<<" successful. Current coordinates: ("<<xCoord<<","<<yCoord<< "). heading: "<<translateDegreesToHeading(headingDegrees)<<", and battery is at "<<batteryLevel<<"."<<endl;
 }
 
 
@@ -108,50 +142,69 @@ void goForward() {
 void rotateLeft(){
     batteryLevel--;
     headingDegrees += 90;
+    headingDegrees = headingDegrees % 360;
 }
 void rotateRight() {
     batteryLevel--;
     headingDegrees -= 90;
+    headingDegrees = (headingDegrees + 360) % 360;
 }
 
 //double check what this is supposed to do
 void scanArea() {
-    batteryLevel -= 3;
+    if (batteryLevel < 3) {
+        cout<<"Command S rejected: insufficient battery"<<endl;
+    }else {
+        batteryLevel -= 3;
+    }
 }
 
 void rechargeBattery() {
     if (xCoord == 0 && yCoord == 0) {
+        successes++;
         batteryLevel = 40;
+        printSuccess('C');
     }else {
-        cout<<"Command C rejected: not at charger";
+        cout<<"Command C rejected: not at charger"<<endl;
     }
 }
 
 void goOnAMission(int goalX, int goalY, string directions) {
+    successes = 0;
+    goalReached = (xCoord == goalX && yCoord == goalY);
     for (char c : directions) {
         switch (c) {
             case 'F':
                 testCondition('F');
                 if (good) {
                     goForward();
-                    cout<<"Command "<<c<<" successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<translateDegreesToHeading(headingDegrees)<<"."<<endl;
+                    successes++;
+                    printSuccess('F');
                 }
                 break;
             case 'L':
+                testCondition('L');
                 if (good) {
                     rotateLeft();
-                    cout<<"Command L successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<translateDegreesToHeading(headingDegrees)<<"."<<endl;
+                    successes++;
+                    printSuccess('L');
                 }
                 break;
             case 'R':
+                testCondition('R');
                 if (good) {
                     rotateRight();
-                    cout<<"Command R successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<translateDegreesToHeading(headingDegrees)<<"."<<endl;
+                    successes++;
+                    printSuccess('R');
                 }
                 break;
             case 'S':
-                scanArea();
-                cout<<"Command S successful. Current coordinates:("<<xCoord<<","<<yCoord<< "). heading: "<<headingDegrees<<"."<<endl;
+                testCondition('S');
+                if (good) {
+                    scanArea();
+                    successes++;
+                    printSuccess('S');
+                }
                 break;
             case 'C':
                 rechargeBattery();
@@ -160,11 +213,15 @@ void goOnAMission(int goalX, int goalY, string directions) {
             default:
                 cout<<"Invalid input"<<endl;
                 break;
-            }
         }
+        if ((xCoord == goalX) && (yCoord == goalY)) {
+            goalReached = true;
+        }
+    }
     heading = translateDegreesToHeading(headingDegrees);
     cout<<"mission complete. rover is at: ("<<xCoord<<","<<yCoord<<"), and battery is at "<<batteryLevel<<". heading: "<<heading<<"."<<endl;
 }
+
 
 int main() {
     headingDegrees = 0;
@@ -186,6 +243,16 @@ int main() {
         cout<<"Input goal Y coordinate"<<endl;
         cin>>goalYCoord;
         goOnAMission(goalXCoord, goalYCoord, mission);
+        cout<<"Number of successful commands: "<<successes<<endl;
+        if (goalReached && xCoord == 0 && yCoord == 0 && batteryLevel == 40) {
+            cout<<"Goal reached and rover reset."<<endl;
+        }else if (goalReached) {
+            cout<<"Goal reached but rover not reset."<<endl;
+        }else if (xCoord == 0 && yCoord == 0 && batteryLevel == 40) {
+            cout<<"Goal not reached but rover reset."<<endl;
+        }else {
+            cout<<"Goal not reached and rover not reset."<<endl;
+        }
         cout<<"Input mission"<<endl;
         cin>>mission;
         if (mission == "quit") {
