@@ -68,27 +68,21 @@ void testCondition(char command) {
     int projectedYCoord1 = yCoord + 1;
     int projectedYCoord2 = yCoord - 1;
 
-    if ((command == 'F' && batteryLevel < 2) ||
-        ((command == 'L' || command == 'R') && batteryLevel < 1) ||
-        (command == 'S' && batteryLevel < 3)) {
+    if ((command == 'F' && batteryLevel < 2) || ((command == 'L' || command == 'R') && batteryLevel < 1) || (command == 'S' && batteryLevel < 3)) {
         cout<<"Command "<<command<<" rejected: insufficient battery"<<endl;
         good = false;
-        }else if (command == 'F' &&
-            ((headingDegrees == 0 && projectedXCoord1 > 9) ||
-             (headingDegrees == 90 && projectedYCoord1 > 9))) {
-            cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
-            good = false;
-             }else if (command == 'F' &&
-                 ((headingDegrees == 180 && projectedXCoord2 < 0) ||
-                  (headingDegrees == 270 && projectedYCoord2 < 0))) {
-                 cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
-                 good = false;
-                  }else if (command == 'C' && (xCoord != 0 || yCoord != 0)) {
-                      cout<<"Command C rejected: not at charger"<<endl;
-                      good = false;
-                  }else{
-                      good = true;
-                  }
+    }else if (command == 'F' && ((headingDegrees == 0 && projectedXCoord1 > 9) || (headingDegrees == 90 && projectedYCoord1 > 9))) {
+        cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
+        good = false;
+    }else if (command == 'F' && ((headingDegrees == 180 && projectedXCoord2 < 0) || (headingDegrees == 270 && projectedYCoord2 < 0))) {
+        cout<<"Command "<<command<<" rejected: out of bounds"<<endl;
+        good = false;
+    }else if (command == 'C' && (xCoord != 0 || yCoord != 0)) {
+        cout<<"Command C rejected: not at charger"<<endl;
+        good = false;
+    }else{
+        good = true;
+    }
 }
 /*
 void testCondition(char command) {
